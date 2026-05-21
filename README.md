@@ -1,100 +1,141 @@
-# 🤖 Claude AI Assistant for Blender
+# 🤖 Claude AI for Blender — Complete Integration
 
-> Ask Claude AI anything about Blender — directly inside Blender, without leaving your workflow.
+> Two ways to connect Claude AI with Blender — choose what fits your workflow.
 
-![Blender + Claude AI](https://img.shields.io/badge/Blender-3.6%2B-orange?logo=blender) ![Claude AI](https://img.shields.io/badge/Claude-Sonnet-blueviolet) ![License](https://img.shields.io/badge/License-MIT-green)
-
----
-
-## What does this add-on do?
-
-This Blender add-on adds a **Claude AI chat panel** inside Blender's N-Panel (sidebar).
-
-You can ask any Blender question and get an expert answer instantly — without switching tabs, searching docs, or watching tutorials.
-
-**Examples:**
-- *"My Cycles render has fireflies, how do I fix it?"*
-- *"How do I scatter 1000 trees on a terrain with Geometry Nodes?"*
-- *"Write me a Python script to rename all objects in my scene"*
-- *"What's the fastest way to UV unwrap this character?"*
-
-Claude sees your **active scene context** (render engine, active object, vertex count) and gives answers specific to your situation.
+![Blender](https://img.shields.io/badge/Blender-3.6%2B-orange?logo=blender)
+![Claude AI](https://img.shields.io/badge/Claude-Sonnet-blueviolet)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
-## Features
+## Two Integrations
 
-- 💬 Full conversation — Claude remembers previous messages in the session
-- 🎯 Scene context — Claude knows your render engine, active object, etc.
-- ⚡ Quick question buttons — one click for common questions
+| | Add-on (Chat) | MCP Server (Control) |
+|---|---|---|
+| **What it does** | Chat with Claude inside Blender | Claude Desktop controls Blender |
+| **Setup** | Simple — just API key | Advanced — Claude Desktop needed |
+| **Use case** | Ask questions, get answers | Claude executes actions directly |
+| **File** | `addon/claude_ai_addon.py` | `mcp/` folder |
+
+---
+
+## Option A — Claude AI Chat Add-on
+
+Ask Claude anything about Blender from inside Blender's N-Panel.
+
+### Features
+- 💬 Chat panel in **View3D → N Panel → Claude AI**
+- 🎯 Sends your scene info (render engine, active object) automatically
+- ⚡ Quick question buttons for common problems
 - 📋 Copy response to clipboard
-- 🔒 API key stored securely with password field
-- 🧵 Non-blocking — Blender stays responsive while Claude is thinking
+- 🧵 Non-blocking — Blender stays responsive
+
+### Install
+1. Download `addon/claude_ai_addon.py`
+2. Blender → `Edit → Preferences → Add-ons → Install`
+3. Select the file → ✅ Enable
+4. N Panel → Claude AI → ⚙️ Settings → Paste your API key
+5. Ask anything!
+
+**Get API key:** [console.anthropic.com](https://console.anthropic.com)
 
 ---
 
-## Installation
+## Option B — MCP Server (Claude Desktop Controls Blender)
 
-### Step 1 — Get an API Key
-1. Go to [console.anthropic.com](https://console.anthropic.com)
-2. Sign up / Log in
-3. Create an API key
-4. Copy it
+Claude Desktop can directly **create objects, change materials, run scripts, render** — all by typing natural language.
 
-### Step 2 — Install the Add-on
-1. Download `claude_ai_addon.py`
-2. Open Blender
-3. `Edit → Preferences → Add-ons → Install`
-4. Select `claude_ai_addon.py`
-5. ✅ Enable the add-on
-
-### Step 3 — Enter API Key
-1. Open 3D Viewport
-2. Press `N` to open N-Panel
-3. Click **"Claude AI"** tab
-4. Expand **⚙️ Settings**
-5. Paste your API key
-
-### Step 4 — Ask Away!
-Type your question → Click **✨ Ask Claude** → Get expert answer!
-
----
-
-## Usage
-
+### Architecture
 ```
-3D Viewport → N Panel (press N) → Claude AI tab
+Claude Desktop ←→ MCP Server (Python) ←→ Blender Socket Server (Add-on)
 ```
 
-| Feature | How to use |
+### Available Tools (What Claude can do)
+
+| Tool | What it does |
 |---|---|
-| Ask a question | Type in the box → Click "Ask Claude" |
-| Quick questions | Click any pre-made button |
-| Copy answer | Click "📋 Copy" button |
-| New conversation | Click "🗑️ Clear" |
-| Scene context | Toggle in Settings |
+| `get_scene_info` | Read scene: engine, frames, object count |
+| `list_objects` | See all objects in scene |
+| `get_object_info` | Detailed info on one object |
+| `create_object` | Create mesh, light, camera |
+| `delete_object` | Delete by name |
+| `move_object` | Teleport to XYZ position |
+| `scale_object` | Resize X, Y, Z |
+| `rotate_object` | Rotate in degrees |
+| `set_material_color` | Color + roughness + metallic |
+| `add_modifier` | Subdivision, Solidify, Mirror... |
+| `set_render_engine` | EEVEE, Cycles, Workbench |
+| `run_python` | Execute any bpy script |
+| `select_object` | Make active |
+
+### Setup (Step by Step)
+
+**Step 1 — Install Blender Socket Server add-on**
+1. Download `mcp/blender_socket_server.py`
+2. Blender → `Edit → Preferences → Add-ons → Install`
+3. Select the file → ✅ Enable
+4. N Panel → Claude AI → **▶ Start Server**
+5. Status shows 🟢 Running
+
+**Step 2 — Install MCP Server**
+```bash
+pip install mcp
+```
+
+**Step 3 — Configure Claude Desktop**
+
+Open Claude Desktop config file:
+- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+- **Mac:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+Add this:
+```json
+{
+  "mcpServers": {
+    "blender": {
+      "command": "python",
+      "args": ["C:/path/to/claude_mcp_server.py"]
+    }
+  }
+}
+```
+
+**Step 4 — Restart Claude Desktop**
+
+You will see a 🔨 tool icon — Blender is connected!
+
+### Example Prompts
+See `examples/example_prompts.md` for ready-to-use prompts.
+
+**Quick examples:**
+```
+"Create a red metallic sphere at the origin"
+"Add a subdivision surface level 3 to Cube"
+"Make 10 random cubes scattered around the scene"
+"Switch to Cycles and render the scene"
+```
 
 ---
 
-## Requirements
+## File Structure
 
-- Blender 3.6 or newer (works with Blender 4.x)
-- Anthropic API key ([get one here](https://console.anthropic.com))
-- Internet connection
-
----
-
-## Cost
-
-This add-on uses the **Claude Sonnet** model via API.
-Anthropic charges per token — typical Blender questions cost **$0.001–0.005** each.
-New accounts get **free credits** to start.
+```
+blender-claude-ai/
+├── README.md
+├── addon/
+│   └── claude_ai_addon.py          ← Option A: Chat add-on (API key)
+├── mcp/
+│   ├── blender_socket_server.py    ← Blender add-on (runs socket server)
+│   └── claude_mcp_server.py        ← MCP server for Claude Desktop
+└── examples/
+    └── example_prompts.md          ← Ready-to-use Claude prompts
+```
 
 ---
 
 ## Related
 
-- [blender-expert-skill](https://github.com/mhd347/blender-expert-skill) — Claude AI skill with deep Blender knowledge
+- [blender-expert-skill](https://github.com/mhd347/blender-expert-skill) — Deep Blender knowledge skill for Claude
 
 ---
 
